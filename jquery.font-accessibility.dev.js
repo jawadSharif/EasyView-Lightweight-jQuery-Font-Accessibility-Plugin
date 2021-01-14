@@ -1,10 +1,11 @@
-(function($){
-	$.fn.easyView = function(option, value){
+(function ($) {
+	$.fn.easyView = function (option, value) {
+		this.selector = option.selector;
 		var selector = $(this.selector);
 
-		if(typeof selector.data('easyView') == 'undefined'){
+		if (typeof selector.data('easyView') == 'undefined') {
 			/* First execution */
-			if(typeof option == 'string'){
+			if (typeof option == 'string') {
 				option = {};
 			}
 
@@ -14,7 +15,7 @@
 				normalContrast: true,
 				defaults: {
 					container: 'body',
-					tags: ['h1','h2','h3','h4','h5','h6', 'div', 'p', 'a', 'span', 'strong', 'em', 'ul', 'ol', 'li'],
+					tags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'p', 'a', 'span', 'strong', 'em', 'ul', 'ol', 'li', 'button', 'i'],
 					step: 10,
 					bootstrap: true,
 					defaultMarkup: '<a href="#decrease" class="decrease-text">Decrease font size</a><a href="#normal" class="reset-text">Normal font size</a><a href="#increase" class="increase-text">Increase font size</a><a href="#contrast" class="contrast-text">Change contrast</a>',
@@ -26,23 +27,23 @@
 				},
 				options: {},
 				affectedTags: new Array(),
-				mergeOptions: function(option){
+				mergeOptions: function (option) {
 					$.extend(this.options, this.defaults, option);
 				},
-				storeDefaults: function(){
+				storeDefaults: function () {
 					/* Store default values for each elements */
-					$.each(this.affectedTags, function(elIndex, elValue){
-						$(elValue).each(function(){
+					$.each(this.affectedTags, function (elIndex, elValue) {
+						$(elValue).each(function () {
 							var current_tag = $(this);
 							var font_size = current_tag.css('font-size');
 
-							if(font_size.indexOf('%') > -1){
+							if (font_size.indexOf('%') > -1) {
 								/* Percentage */
-								current_tag.data('originalSize', parseInt(font_size.replace('%','')));
+								current_tag.data('originalSize', parseInt(font_size.replace('%', '')));
 								current_tag.data('originalUnit', '%');
 							} else {
 								/* Other units */
-								current_tag.data('originalSize', parseInt(font_size.replace(font_size.substr(-2),'')));
+								current_tag.data('originalSize', parseInt(font_size.replace(font_size.substr(-2), '')));
 								current_tag.data('originalUnit', font_size.substr(-2));
 							}
 
@@ -55,105 +56,112 @@
 					$(this.options.container).data('originalBackground', $(this.options.container).css('background-color'));
 					$(this.options.container).data('originalColor', $(this.options.container).css('color'));
 				},
-				createDefaultMarkup: function(){
+				createDefaultMarkup: function () {
 					/* Create a default markup */
-					if(selector.html() == ''){
+					if (selector.html() == '') {
 						selector.html(this.options.defaultMarkup);
 					}
 				},
-				setActions: function(){
+				setActions: function () {
 					var self = this;
 
 					/* Decrease font size */
-					selector.find(this.options.decreaseSelector).click(function(ev){
+					selector.find(this.options.decreaseSelector).click(function (ev) {
 						ev.preventDefault();
 						self.decreaseFont();
 					});
 
 					/* Reset font size */
-					selector.find(this.options.normalSelector).click(function(ev){
+					selector.find(this.options.normalSelector).click(function (ev) {
 						ev.preventDefault();
 						self.resetFont();
 					});
 
 					/* Increase font size */
-					selector.find(this.options.increaseSelector).click(function(ev){
+					selector.find(this.options.increaseSelector).click(function (ev) {
 						ev.preventDefault();
 						self.increaseFont();
 					});
 
 					/* Change text contrast */
-					selector.find(this.options.contrastSelector).click(function(ev){
+					selector.find(this.options.contrastSelector).click(function (ev) {
 						ev.preventDefault();
 						self.changeContrast();
 					});
 				},
-				fetchTags: function(){
+				fetchTags: function () {
 					/* Fetching all tags to work */
 					var affectedTags = this.affectedTags;
 					var options = this.options;
-					$.each(this.options.tags, function(i, v){
-						affectedTags.push(options.container+" "+v);
+					$.each(this.options.tags, function (i, v) {
+						affectedTags.push(options.container + " " + v);
 					});
 				},
-				decreaseFont: function(){
-					if((this.currentRatio - this.options.step) >= 10){
+				decreaseFont: function () {
+					if ((this.currentRatio - this.options.step) >= 10) {
 						this.currentRatio = this.currentRatio - this.options.step;
 					}
 					this.changeFontSize();
 				},
-				resetFont: function(){
+				resetFont: function () {
 					/* Set default ratio */
 					this.currentRatio = 100;
 					this.changeFontSize();
 				},
-				increaseFont: function(){
+				increaseFont: function () {
 					this.currentRatio = this.currentRatio + this.options.step;
 					this.changeFontSize();
 				},
-				changeFontSize: function(ratio){
-					if(typeof ratio != 'undefined' && parseInt(ratio) > 10){
+				changeFontSize: function (ratio) {
+					if (typeof ratio != 'undefined' && parseInt(ratio) > 10) {
 						this.currentRatio = ratio;
 					}
 
 					var current_ratio = this.currentRatio;
+					var options = this.options;
 
-					$.each(this.affectedTags, function(elIndex, elValue){
-						$(elValue).each(function(){
+					$.each(this.affectedTags, function (elIndex, elValue) {
+						$(elValue).each(function () {
 							var current_tag = $(this);
-							current_tag.css('font-size', (current_tag.data('originalSize')*(current_ratio/100))+current_tag.data('originalUnit'));
+							if ($(current_tag).is(options.exclude)) {
+								return;
+							}
+							current_tag.css('font-size', (current_tag.data('originalSize') * (current_ratio / 100)) + current_tag.data('originalUnit'));
 						});
 					});
 
 					this.persistConfig();
 				},
-				changeContrast: function(){
-				    var normalContrast = this.normalContrast;
-					$(this.affectedTags.join(',')).each(function(){
+				changeContrast: function () {
+					var normalContrast = this.normalContrast;
+					var options = this.options;
+					$(this.affectedTags.join(',')).each(function () {
 						var current_tag = $(this);
-						
+						if ($(current_tag).is(options.exclude)) {
+							return;
+						}
 						normalContrast ? current_tag.css('color', '#fff') : current_tag.css('color', current_tag.data('originalColor'));
 					});
-					
+
 					$(this.options.container).css('color', this.normalContrast ? '#fff' : $(this.options.container).data('originalColor'));
 					$(this.options.container).css('background-color', this.normalContrast ? '#000' : $(this.options.container).data('originalBackground'));
-                    
+
 					this.normalContrast = !this.normalContrast;
-					
+
 					this.persistConfig();
 				},
-				persistConfig: function(){
-					if(!this.options.persist){
+				persistConfig: function () {
+					if (!this.options.persist) {
 						return;
 					}
 
-					if(typeof(Storage) !== "undefined"){
+					if (typeof (Storage) !== "undefined") {
 						window.localStorage.setItem(this.selector.selector, this.getCurrentConfig());
 					} else {
 						console.log('Web Storage not available!');
 					}
 				},
-				getCurrentConfig: function(){
+				getCurrentConfig: function () {
 					var config = {
 						ratio: this.currentRatio,
 						normalContrast: !this.normalContrast
@@ -161,14 +169,14 @@
 
 					return JSON.stringify(config);
 				},
-				restoreFromStorage: function(){
-					if(!this.options.persist){
+				restoreFromStorage: function () {
+					if (!this.options.persist) {
 						return;
 					}
 
 					var storagedOption = window.localStorage.getItem(this.selector.selector);
 
-					if(storagedOption){
+					if (storagedOption) {
 						storagedOption = JSON.parse(storagedOption);
 
 						this.currentRatio = storagedOption.ratio;
@@ -178,7 +186,7 @@
 						this.changeContrast();
 					}
 				},
-				startPlugin: function(option){
+				startPlugin: function (option) {
 					this.mergeOptions(option);
 					this.fetchTags();
 					this.storeDefaults();
@@ -186,40 +194,40 @@
 					this.setActions();
 					this.restoreFromStorage();
 				},
-				executeFunction: function(function_name, value){
-					switch(function_name){
+				executeFunction: function (function_name, value) {
+					switch (function_name) {
 						case 'decrease':
-								this.decreaseFont();
+							this.decreaseFont();
 							break;
 						case 'reset':
-								this.resetFont();
+							this.resetFont();
 							break;
 						case 'increase':
-								this.increaseFont();
+							this.increaseFont();
 							break;
 						case 'contrast':
-								if(typeof value != 'undefined'){
-									/* Change to specified value - true or false */
-									if(value){
-										/* Setting true, contrast will be applied */
-										this.normalContrast = true;
-									} else {
-										/* Setting false, will remove contrast */
-										this.normalContrast = false;
-									}
+							if (typeof value != 'undefined') {
+								/* Change to specified value - true or false */
+								if (value) {
+									/* Setting true, contrast will be applied */
+									this.normalContrast = true;
+								} else {
+									/* Setting false, will remove contrast */
+									this.normalContrast = false;
 								}
+							}
 
-								this.changeContrast();
+							this.changeContrast();
 							break;
 						case 'setRatio':
-								this.changeFontSize(ratio);
+							this.changeFontSize(ratio);
 							break;
 						default:
-								alert("Called function does not exist!");
+							alert("Called function does not exist!");
 							break;
 					}
 				},
-				destroy: function(){
+				destroy: function () {
 					/* Back all fonts to default size */
 					this.resetFont();
 
@@ -236,14 +244,14 @@
 
 			/* Store plugin instance */
 			selector.data('easyView', plugin);
-		} else { 
+		} else {
 			/* Plugin is already initialized, execute existing function */
 			var plugin = selector.data('easyView');
-			if(typeof option == 'object'){
+			if (typeof option == 'object') {
 				/* Restart plugin */
 				plugin.destroy();
 				plugin.startPlugin(option);
-			} else if(typeof option == 'string') {
+			} else if (typeof option == 'string') {
 				/* Execute specific function */
 				plugin.executeFunction(option, value);
 			} else {
