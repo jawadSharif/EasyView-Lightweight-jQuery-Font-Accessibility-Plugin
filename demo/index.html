@@ -72,9 +72,11 @@
 			<div class="card-header"><i class="glyphicon glyphicon-wrench"></i> Code - Javascript</div>
 			<div class="card-body">
 				<pre>
-$(function(){
-	$('#font-setting').easyView();
-});
+	$('#font-setting-basic').easyView({
+		selector: '#font-setting-basic',
+		container: '#basic',
+		exclude: '.excluded'
+	});
 </pre>
 			</div>
 		</div>
@@ -142,14 +144,16 @@ $(function(){
 			<div class="card-header"><i class="glyphicon glyphicon-wrench"></i> Code - Javascript</div>
 			<div class="card-body">
 				<pre>
-$(function(){
-	$('#font-setting-buttons').easyView({
-		increaseSelector: '.increase-me',
-		decreaseSelector: '.decrease-me',
-		normalSelector: '.reset-me',
-		contrastSelector: '.change-me'
-	});
+$('#font-setting-buttons').easyView({
+	selector: '#font-setting-buttons',
+	container: 'body',
+	increaseSelector: '.increase-me',
+	decreaseSelector: '.decrease-me',
+	normalSelector: '.reset-me',
+	contrastSelector: '.change-me',
+	exclude: '.excluded'
 });
+		
 </pre>
 			</div>
 		</div>
